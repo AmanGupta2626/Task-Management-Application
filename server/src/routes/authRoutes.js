@@ -11,7 +11,6 @@ import {
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimit.js';
-import { ROLES } from '../models/User.js';
 
 const router = Router();
 
@@ -22,7 +21,6 @@ router.post(
     body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
     body('email').isEmail().withMessage('A valid email is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('role').optional().isIn(ROLES).withMessage('Invalid role'),
   ],
   validate,
   register

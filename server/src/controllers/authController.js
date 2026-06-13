@@ -9,22 +9,9 @@ function signToken(user) {
 
 export async function register(req, res, next) {
   try {
-    const { username, email, password, role, manager, teamLead } = req.body;
+    const { username, email, password } = req.body;
 
-    const data = { username, email, password, role: role || 'Employee' };
-
-    if (data.role === 'TeamLead') {
-      if (!manager) {
-        return res.status(400).json({ message: 'A manager must be selected for a team lead' });
-      }
-      data.manager = manager;
-    }
-
-    if (data.role === 'Employee' && teamLead) {
-      data.teamLead = teamLead;
-    }
-
-    const user = await User.create(data);
+    const user = await User.create({ username, email, password, role: 'Employee' });
     const token = signToken(user);
 
     res.status(201).json({ token, user });

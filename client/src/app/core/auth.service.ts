@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { AuthResponse, Role, User } from './models';
+import { AuthResponse, User } from './models';
 
 const TOKEN_KEY = 'tm_token';
 const USER_KEY = 'tm_user';
@@ -12,9 +12,6 @@ interface RegisterPayload {
   username: string;
   email: string;
   password: string;
-  role: Role;
-  manager?: string;
-  teamLead?: string;
 }
 
 @Injectable({ providedIn: 'root' })

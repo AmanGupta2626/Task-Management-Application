@@ -10,7 +10,7 @@
 
     <div class="card p-7">
       <h2 class="mb-1 text-lg font-semibold text-white">Create account</h2>
-      <p class="mb-5 text-sm text-slate-400">Join your team and start organizing work</p>
+      <p class="mb-5 text-sm text-slate-400">Sign up to start organizing your work</p>
 
       @if (error()) {
         <div class="mb-4 rounded-lg bg-rose-500/10 px-4 py-3 text-sm text-rose-300 ring-1 ring-rose-500/20">{{ error() }}</div>
@@ -33,7 +33,7 @@
           }
         </div>
 
-        <div class="mb-4">
+        <div class="mb-5">
           <label class="label" for="password">Password</label>
           <input id="password" type="password" class="input" formControlName="password" placeholder="••••••••" />
           @if (form.controls.password.touched && form.controls.password.invalid) {
@@ -41,46 +41,7 @@
           }
         </div>
 
-        <div class="mb-4">
-          <label class="label" for="role">Role</label>
-          <select id="role" class="input" formControlName="role">
-            <option value="Employee">Employee</option>
-            <option value="TeamLead">Team Lead</option>
-            <option value="Manager">Manager</option>
-          </select>
-        </div>
-
-        @if (form.controls.role.value === 'TeamLead') {
-          <div class="mb-4">
-            <label class="label" for="manager">Reports to (Manager)</label>
-            <select id="manager" class="input" formControlName="manager">
-              <option value="">Select a manager</option>
-              @for (m of managers(); track m._id) {
-                <option [value]="m._id">{{ m.username }}</option>
-              }
-            </select>
-            @if (form.controls.manager.touched && form.controls.manager.invalid) {
-              <span class="field-error">Please select a manager</span>
-            }
-          </div>
-        }
-
-        @if (form.controls.role.value === 'Employee') {
-          <div class="mb-4">
-            <label class="label" for="teamLead">Reports to (Team Lead)</label>
-            <select id="teamLead" class="input" formControlName="teamLead">
-              <option value="">Select a team lead</option>
-              @for (t of teamLeads(); track t._id) {
-                <option [value]="t._id">{{ t.username }}</option>
-              }
-            </select>
-            @if (form.controls.teamLead.touched && form.controls.teamLead.invalid) {
-              <span class="field-error">Please select a team lead</span>
-            }
-          </div>
-        }
-
-        <button class="btn-primary mt-1 w-full" type="submit" [disabled]="loading()">
+        <button class="btn-primary w-full" type="submit" [disabled]="loading()">
           {{ loading() ? 'Creating...' : 'Create account' }}
         </button>
       </form>
