@@ -3,8 +3,18 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    background-color: #070b18;
+  }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply text-slate-200 antialiased;
+    background-color: #070b18;
+    background-image:
+      radial-gradient(1100px 600px at 50% -15%, rgba(99, 102, 241, 0.22), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, rgba(139, 92, 246, 0.14), transparent 55%),
+      radial-gradient(700px 500px at 0% 100%, rgba(56, 189, 248, 0.10), transparent 55%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 }
 
@@ -13,28 +23,31 @@
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700 hover:-translate-y-0.5 active:translate-y-0;
+    @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-500 hover:-translate-y-0.5 active:translate-y-0;
   }
   .btn-secondary {
-    @apply btn bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50;
+    @apply btn bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10;
   }
   .btn-danger {
-    @apply btn bg-rose-500 text-white hover:bg-rose-600;
+    @apply btn bg-rose-500/90 text-white hover:bg-rose-500;
   }
   .btn-ghost {
     @apply btn px-3 py-1.5 text-white/90 ring-1 ring-white/25 hover:bg-white/10;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15;
+    @apply w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/20;
+  }
+  .input option {
+    @apply bg-slate-900 text-slate-100;
   }
   .label {
-    @apply mb-1.5 block text-sm font-semibold text-slate-700;
+    @apply mb-1.5 block text-sm font-semibold text-slate-300;
   }
   .field-error {
-    @apply mt-1 text-xs text-rose-500;
+    @apply mt-1 text-xs text-rose-400;
   }
   .card {
-    @apply rounded-2xl bg-white shadow-sm ring-1 ring-slate-100;
+    @apply rounded-2xl bg-slate-900/60 shadow-xl ring-1 ring-white/10 backdrop-blur-xl;
   }
   .pill {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
