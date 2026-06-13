@@ -2,13 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { AuthService } from '../../../core/auth.service';
 import { UserService } from '../../../core/user.service';
-import { TaskService } from '../../../core/task.service';
-import { Task, User } from '../../../core/models';
-
-interface TeamMember {
-  user: User;
-  tasks: Task[];
-}
+import { User } from '../../../core/models';
 
 @Component({
   selector: 'app-team',
@@ -18,35 +12,77 @@ interface TeamMember {
 export class Team implements OnInit {
   protected auth = inject(AuthService);
   private userService = inject(UserService);
-  private taskService = inject(TaskService);
 
   readonly users = signal<User[]>([]);
-  readonly tasks = signal<Task[]>([]);
   readonly loading = signal(false);
+  readonly saving = signal(false);
+
+  readonly assigningLead = signal<User | null>(null);
+  readonly selectedIds = signal<string[]>([]);
 
   readonly teamLeads = computed(() => this.users().filter((u) => u.role === 'TeamLead'));
   readonly employees = computed(() => this.users().filter((u) => u.role === 'Employee'));
 
-  readonly members = computed<TeamMember[]>(() => {
-    const relevant =
-      this.auth.role() === 'Manager'
-        ? this.users()
-        : this.users().filter((u) => u._id !== this.auth.currentUser()?._id);
-    return relevant.map((user) => ({
-      user,
-      tasks: this.tasks().filter((t) => t.assignedTo?._id === user._id),
-    }));
-  });
-
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
     this.loading.set(true);
-    this.userService.list().subscribe((u) => this.users.set(u));
-    this.taskService.list().subscribe({
-      next: (t) => {
-        this.tasks.set(t);
+    this.userService.list().subscribe({
+      next: (u) => {
+        this.users.set(u);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  membersOf(lead: User): User[] {
+    return this.employees().filter((e) => e.teamLead === lead._id);
+  }
+
+  teamLeadName(employee: User): string | null {
+    if (!employee.teamLead) return null;
+    return this.teamLeads().find((l) => l._id === employee.teamLead)?.username ?? null;
+  }
+
+  openAssign(lead: User): void {
+    this.assigningLead.set(lead);
+    this.selectedIds.set(this.membersOf(lead).map((e) => e._id));
+  }
+
+  closeAssign(): void {
+    this.assigningLead.set(null);
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedIds().includes(id);
+  }
+
+  toggleSelect(id: string): void {
+    this.selectedIds.update((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
+    );
+  }
+
+  otherLeadName(employee: User): string | null {
+    const lead = this.assigningLead();
+    if (!employee.teamLead || employee.teamLead === lead?._id) return null;
+    return this.teamLeadName(employee);
+  }
+
+  saveAssignment(): void {
+    const lead = this.assigningLead();
+    if (!lead) return;
+    this.saving.set(true);
+    this.userService.assignMembers(lead._id, this.selectedIds()).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.assigningLead.set(null);
+        this.load();
+      },
+      error: () => this.saving.set(false),
     });
   }
 }

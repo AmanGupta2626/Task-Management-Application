@@ -32,3 +32,31 @@ export async function getAssignable(req, res, next) {
     next(err);
   }
 }
+
+export async function assignMembers(req, res, next) {
+  try {
+    const { teamLeadId, employeeIds = [] } = req.body;
+
+    const teamLead = await User.findById(teamLeadId);
+    if (!teamLead || teamLead.role !== 'TeamLead') {
+      return res.status(400).json({ message: 'Invalid team lead selected' });
+    }
+
+    teamLead.manager = req.user._id;
+    await teamLead.save();
+
+    await User.updateMany(
+      { _id: { $in: employeeIds }, role: 'Employee' },
+      { $set: { teamLead: teamLead._id } }
+    );
+
+    await User.updateMany(
+      { role: 'Employee', teamLead: teamLead._id, _id: { $nin: employeeIds } },
+      { $set: { teamLead: null } }
+    );
+
+    res.json({ message: 'Team members updated' });
+  } catch (err) {
+    next(err);
+  }
+}

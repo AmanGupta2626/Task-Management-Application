@@ -24,15 +24,22 @@ export async function getScopeUserIds(user) {
   return [user._id, ...subordinates];
 }
 
+function assignableFilter(user) {
+  if (user.role === 'Manager') return { _id: { $ne: user._id } };
+  if (user.role === 'TeamLead') return { role: 'Employee' };
+  return null;
+}
+
 export async function getAssignableUsers(user) {
-  if (user.role === 'Employee') {
-    return [user];
-  }
-  const ids = await getScopeUserIds(user);
-  return User.find({ _id: { $in: ids } }).select('username email role');
+  const filter = assignableFilter(user);
+  if (!filter) return [];
+  return User.find(filter).select('username email role').sort({ role: 1, username: 1 });
 }
 
 export async function buildTaskVisibilityFilter(user) {
+  if (user.role === 'Manager') {
+    return {};
+  }
   if (user.role === 'Employee') {
     return { $or: [{ assignedTo: user._id }, { createdBy: user._id }] };
   }
@@ -41,14 +48,17 @@ export async function buildTaskVisibilityFilter(user) {
 }
 
 export async function canAssignTo(user, targetUserId) {
-  if (user.role === 'Employee') {
-    return String(targetUserId) === String(user._id);
-  }
-  const ids = await getScopeUserIds(user);
-  return ids.some((id) => String(id) === String(targetUserId));
+  if (String(targetUserId) === String(user._id)) return true;
+  const filter = assignableFilter(user);
+  if (!filter) return false;
+  const exists = await User.exists({ ...filter, _id: targetUserId });
+  return Boolean(exists);
 }
 
 export async function canAccessTask(user, task) {
+  if (user.role === 'Manager') {
+    return true;
+  }
   if (user.role === 'Employee') {
     return (
       String(task.assignedTo?._id || task.assignedTo) === String(user._id) ||

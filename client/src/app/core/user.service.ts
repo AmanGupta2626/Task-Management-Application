@@ -18,4 +18,8 @@ export class UserService {
   assignable(): Observable<User[]> {
     return this.http.get<User[]>(`${this.api}/assignable`);
   }
+
+  assignMembers(teamLeadId: string, employeeIds: string[]): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.api}/team`, { teamLeadId, employeeIds });
+  }
 }
