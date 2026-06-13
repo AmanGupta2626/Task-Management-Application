@@ -20,7 +20,11 @@ router.post(
   [
     body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
     body('email').isEmail().withMessage('A valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('password')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
+      .withMessage(
+        'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a special character'
+      ),
   ],
   validate,
   register

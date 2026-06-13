@@ -36,8 +36,15 @@
         <div class="mb-5">
           <label class="label" for="password">Password</label>
           <input id="password" type="password" class="input" formControlName="password" placeholder="••••••••" />
-          @if (form.controls.password.touched && form.controls.password.invalid) {
-            <span class="field-error">Password must be at least 6 characters</span>
+          @if (form.controls.password.value) {
+            <ul class="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+              @for (rule of passwordRules(); track rule.label) {
+                <li class="flex items-center gap-1.5 text-xs"
+                  [class]="rule.ok ? 'text-emerald-400' : 'text-slate-500'">
+                  <span>{{ rule.ok ? '✓' : '○' }}</span> {{ rule.label }}
+                </li>
+              }
+            </ul>
           }
         </div>
 

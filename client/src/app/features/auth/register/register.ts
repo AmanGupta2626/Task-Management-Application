@@ -4,6 +4,8 @@ import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth.service';
 
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
@@ -21,8 +23,19 @@ export class Register {
   form = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.pattern(PASSWORD_PATTERN)]],
   });
+
+  passwordRules() {
+    const v = this.form.controls.password.value || '';
+    return [
+      { label: 'At least 8 characters', ok: v.length >= 8 },
+      { label: 'One uppercase letter', ok: /[A-Z]/.test(v) },
+      { label: 'One lowercase letter', ok: /[a-z]/.test(v) },
+      { label: 'One number', ok: /\d/.test(v) },
+      { label: 'One special character', ok: /[^A-Za-z0-9]/.test(v) },
+    ];
+  }
 
   submit(): void {
     if (this.form.invalid) {
