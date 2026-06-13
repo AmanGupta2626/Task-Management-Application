@@ -1,0 +1,102 @@
+<div class="page-head">
+  <div>
+    <h1>Tasks</h1>
+    <p class="muted">{{ pendingCount() }} pending · {{ completedCount() }} completed</p>
+  </div>
+  <button class="btn" (click)="openCreate()">+ New Task</button>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<div class="filters">
+  <button [class.active]="filter() === 'all'" (click)="setFilter('all')">All</button>
+  <button [class.active]="filter() === 'pending'" (click)="setFilter('pending')">Pending</button>
+  <button [class.active]="filter() === 'completed'" (click)="setFilter('completed')">Completed</button>
+</div>
+
+@if (loading()) {
+  <p class="muted">Loading tasks...</p>
+} @else if (visibleTasks().length === 0) {
+  <div class="card empty">No tasks to show.</div>
+} @else {
+  <div class="task-grid">
+    @for (task of visibleTasks(); track task._id) {
+      <div class="card task" [class.done]="task.status === 'completed'">
+        <div class="task-top">
+          <span class="status-pill" [class.completed]="task.status === 'completed'">
+            {{ task.status }}
+          </span>
+          <span class="date">{{ task.updatedAt | date: 'MMM d, y' }}</span>
+        </div>
+
+        <h3>{{ task.title }}</h3>
+        @if (task.description) {
+          <p class="desc">{{ task.description }}</p>
+        }
+
+        <div class="meta">
+          <span><strong>Assigned:</strong> {{ task.assignedTo.username }}</span>
+          <span><strong>By:</strong> {{ task.createdBy.username }}</span>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-sm btn-secondary" (click)="toggleStatus(task)">
+            {{ task.status === 'pending' ? 'Mark done' : 'Reopen' }}
+          </button>
+          <button class="btn btn-sm btn-secondary" (click)="openEdit(task)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="remove(task)">Delete</button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (showForm()) {
+  <div class="overlay" (click)="closeForm()">
+    <div class="card modal" (click)="$event.stopPropagation()">
+      <h2>{{ editingId() ? 'Edit Task' : 'New Task' }}</h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" formControlName="title" placeholder="Task title" />
+          @if (form.controls.title.touched && form.controls.title.invalid) {
+            <span class="error">Title must be at least 3 characters</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" rows="3" formControlName="description"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status" formControlName="status">
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        @if (canAssign()) {
+          <div class="field">
+            <label for="assignedTo">Assign to</label>
+            <select id="assignedTo" formControlName="assignedTo">
+              <option value="">Myself</option>
+              @for (u of assignableUsers(); track u._id) {
+                <option [value]="u._id">{{ u.username }} ({{ u.role }})</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn">{{ editingId() ? 'Save changes' : 'Create task' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
