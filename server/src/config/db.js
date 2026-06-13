@@ -6,6 +6,6 @@ export async function connectDB(uri) {
     dns.setServers(process.env.DNS_SERVERS.split(','));
   }
   mongoose.set('strictQuery', true);
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, { dbName: process.env.MONGO_DB || 'task_management' });
   console.log('MongoDB connected');
 }
