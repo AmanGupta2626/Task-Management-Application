@@ -123,6 +123,18 @@ After running `npm run seed`, log in with any of these (password: `password123`)
 
 The backend emits `task:created`, `task:updated` and `task:deleted` events over Socket.IO. Each client authenticates the socket connection with its JWT and joins a personal room. When a task changes, the event is delivered to the assignee, the creator, the assignee's team lead and that team lead's manager, so the list stays in sync across connected clients automatically.
 
+## Security
+
+- Passwords are hashed with bcrypt and never returned in any API response.
+- JWTs are signed with a strong secret and verified on every protected route; there is no insecure fallback secret.
+- All task and user routes require authentication, and access is scoped by role so users cannot read or modify data outside their permitted set (verified against cross-team IDOR attempts).
+- Input is validated server-side with express-validator, which also blocks NoSQL operator injection on the auth endpoints.
+- `helmet` sets hardened HTTP security headers (HSTS, X-Content-Type-Options, X-Frame-Options, and more).
+- Authentication endpoints are rate limited to mitigate brute-force attempts.
+- The public registration lookup endpoints expose only usernames, not emails.
+- On the client, an HTTP interceptor logs the user out and redirects to login on a 401, and the session is re-validated against the server on startup.
+- Secrets live only in `.env`, which is gitignored and never committed.
+
 ## Deployment
 
 In production the Express server serves the compiled Angular app as static files, so the whole stack runs as a **single web service** with MongoDB Atlas as the database. A `render.yaml` blueprint is included for one click deployment on [Render](https://render.com).
