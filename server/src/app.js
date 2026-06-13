@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
@@ -15,6 +16,7 @@ const clientDist = path.resolve(__dirname, '../../client/dist/client/browser');
 export function createApp() {
   const app = express();
 
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(
     cors({
       origin: process.env.CLIENT_ORIGIN?.split(',') || '*',

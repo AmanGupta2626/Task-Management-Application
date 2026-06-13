@@ -10,12 +10,14 @@ import {
 } from '../controllers/authController.js';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimit.js';
 import { ROLES } from '../models/User.js';
 
 const router = Router();
 
 router.post(
   '/register',
+  authLimiter,
   [
     body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
     body('email').isEmail().withMessage('A valid email is required'),
@@ -28,6 +30,7 @@ router.post(
 
 router.post(
   '/login',
+  authLimiter,
   [
     body('email').isEmail().withMessage('A valid email is required'),
     body('password').notEmpty().withMessage('Password is required'),

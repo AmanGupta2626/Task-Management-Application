@@ -55,7 +55,7 @@ export async function me(req, res) {
 
 export async function listManagers(req, res, next) {
   try {
-    const managers = await User.find({ role: 'Manager' }).select('username email');
+    const managers = await User.find({ role: 'Manager' }).select('username');
     res.json(managers);
   } catch (err) {
     next(err);
@@ -64,7 +64,7 @@ export async function listManagers(req, res, next) {
 
 export async function listTeamLeads(req, res, next) {
   try {
-    const teamLeads = await User.find({ role: 'TeamLead' }).select('username email manager');
+    const teamLeads = await User.find({ role: 'TeamLead' }).select('username');
     res.json(teamLeads);
   } catch (err) {
     next(err);
