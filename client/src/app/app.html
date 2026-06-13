@@ -1,0 +1,20 @@
+@if (auth.isLoggedIn()) {
+  <header class="navbar">
+    <div class="brand">TaskFlow</div>
+    <nav>
+      <a routerLink="/tasks" routerLinkActive="active">Tasks</a>
+      @if (auth.role() !== 'Employee') {
+        <a routerLink="/team" routerLinkActive="active">Team</a>
+      }
+    </nav>
+    <div class="user-box">
+      <span class="badge">{{ auth.currentUser()?.role }}</span>
+      <span class="username">{{ auth.currentUser()?.username }}</span>
+      <button class="btn-ghost" (click)="logout()">Logout</button>
+    </div>
+  </header>
+}
+
+<main class="content">
+  <router-outlet />
+</main>

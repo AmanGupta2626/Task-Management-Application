@@ -1,0 +1,77 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  height: 60px;
+  background: #1f2937;
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+
+  .brand {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+
+    a {
+      color: #d1d5db;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+      }
+
+      &.active {
+        background: #374151;
+        color: #fff;
+      }
+    }
+  }
+
+  .user-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .badge {
+      background: #4f46e5;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .username {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
+
+.content {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 20px;
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    gap: 12px;
+    padding: 0 12px;
+
+    .user-box .username {
+      display: none;
+    }
+  }
+}
