@@ -4,6 +4,7 @@ import { body } from 'express-validator';
 import {
   register,
   login,
+  logout,
   me,
   listManagers,
   listTeamLeads,
@@ -41,6 +42,7 @@ router.post(
   login
 );
 
+router.post('/logout', logout);
 router.get('/me', authenticate, me);
 router.get('/managers', listManagers);
 router.get('/team-leads', listTeamLeads);

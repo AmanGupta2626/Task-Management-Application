@@ -6,12 +6,7 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('tm_token');
-  if (token) {
-    req = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` },
-    });
-  }
+  req = req.clone({ withCredentials: true });
 
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -19,7 +14,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
       if (err.status === 401 && !req.url.includes('/auth/login')) {
-        auth.logout();
+        auth.clearSession();
         router.navigateByUrl('/login');
       }
       return throwError(() => err);

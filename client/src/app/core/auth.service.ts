@@ -5,7 +5,6 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthResponse, User } from './models';
 
-const TOKEN_KEY = 'tm_token';
 const USER_KEY = 'tm_user';
 
 interface RegisterPayload {
@@ -28,23 +27,20 @@ export class AuthService {
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.api}/login`, { email, password })
-      .pipe(tap((res) => this.persist(res)));
+      .pipe(tap((res) => this.persistUser(res.user)));
   }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.api}/register`, payload)
-      .pipe(tap((res) => this.persist(res)));
+      .pipe(tap((res) => this.persistUser(res.user)));
   }
 
   verifySession(): void {
-    if (!this.token) return;
+    if (!this.userSignal()) return;
     this.http.get<{ user: User }>(`${this.api}/me`).subscribe({
-      next: (res) => {
-        localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-        this.userSignal.set(res.user);
-      },
-      error: () => this.logout(),
+      next: (res) => this.persistUser(res.user),
+      error: () => this.clearSession(),
     });
   }
 
@@ -57,19 +53,18 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
+    this.http.post(`${this.api}/logout`, {}).subscribe({ next: () => {}, error: () => {} });
+    this.clearSession();
+  }
+
+  clearSession(): void {
     localStorage.removeItem(USER_KEY);
     this.userSignal.set(null);
   }
 
-  get token(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  private persist(res: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, res.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    this.userSignal.set(res.user);
+  private persistUser(user: User): void {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this.userSignal.set(user);
   }
 
   private readUser(): User | null {
@@ -79,7 +74,6 @@ export class AuthService {
       return JSON.parse(raw);
     } catch {
       localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(TOKEN_KEY);
       return null;
     }
   }

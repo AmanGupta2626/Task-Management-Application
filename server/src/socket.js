@@ -4,6 +4,15 @@ import User from './models/User.js';
 
 let io = null;
 
+function tokenFromCookie(cookieHeader) {
+  if (!cookieHeader) return null;
+  const entry = cookieHeader
+    .split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith('token='));
+  return entry ? decodeURIComponent(entry.slice('token='.length)) : null;
+}
+
 export function initSocket(server) {
   io = new Server(server, {
     cors: {
@@ -13,7 +22,7 @@ export function initSocket(server) {
   });
 
   io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
+    const token = tokenFromCookie(socket.handshake.headers.cookie) || socket.handshake.auth?.token;
     if (!token) return next(new Error('Authentication required'));
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET);

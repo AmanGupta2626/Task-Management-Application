@@ -14,11 +14,11 @@ export class SocketService {
   private socket: Socket | null = null;
   readonly lastEvent = signal<TaskEvent | null>(null);
 
-  connect(token: string): void {
+  connect(): void {
     if (this.socket) return;
 
     this.socket = io(environment.apiUrl || '/', {
-      auth: { token },
+      withCredentials: true,
     });
 
     this.socket.on('task:created', (task: Task) =>

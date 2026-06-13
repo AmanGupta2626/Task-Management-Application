@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
@@ -15,6 +16,7 @@ const clientDist = path.resolve(__dirname, '../../client/dist/client/browser');
 
 export function createApp() {
   const app = express();
+  app.set('trust proxy', 1);
 
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(
@@ -24,6 +26,7 @@ export function createApp() {
     })
   );
   app.use(express.json());
+  app.use(cookieParser());
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
