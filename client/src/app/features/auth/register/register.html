@@ -1,0 +1,81 @@
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <h1>Create account</h1>
+    <p class="subtitle">Join your team on TaskFlow</p>
+
+    @if (error()) {
+      <div class="alert">{{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" formControlName="username" placeholder="yourname" />
+        @if (form.controls.username.touched && form.controls.username.invalid) {
+          <span class="error">Username must be at least 3 characters</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" placeholder="you@example.com" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <span class="error">Enter a valid email address</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password" placeholder="••••••••" />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="error">Password must be at least 6 characters</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role" formControlName="role">
+          <option value="Employee">Employee</option>
+          <option value="TeamLead">Team Lead</option>
+          <option value="Manager">Manager</option>
+        </select>
+      </div>
+
+      @if (form.controls.role.value === 'TeamLead') {
+        <div class="field">
+          <label for="manager">Reports to (Manager)</label>
+          <select id="manager" formControlName="manager">
+            <option value="">Select a manager</option>
+            @for (m of managers(); track m._id) {
+              <option [value]="m._id">{{ m.username }}</option>
+            }
+          </select>
+          @if (form.controls.manager.touched && form.controls.manager.invalid) {
+            <span class="error">Please select a manager</span>
+          }
+        </div>
+      }
+
+      @if (form.controls.role.value === 'Employee') {
+        <div class="field">
+          <label for="teamLead">Reports to (Team Lead)</label>
+          <select id="teamLead" formControlName="teamLead">
+            <option value="">Select a team lead</option>
+            @for (t of teamLeads(); track t._id) {
+              <option [value]="t._id">{{ t.username }}</option>
+            }
+          </select>
+          @if (form.controls.teamLead.touched && form.controls.teamLead.invalid) {
+            <span class="error">Please select a team lead</span>
+          }
+        </div>
+      }
+
+      <button class="btn full" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Creating...' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="switch">Already have an account? <a routerLink="/login">Sign in</a></p>
+  </div>
+</div>
