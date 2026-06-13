@@ -125,19 +125,20 @@ The backend emits `task:created`, `task:updated` and `task:deleted` events over 
 
 ## Deployment
 
-The application is designed to deploy to any Node friendly cloud platform with MongoDB Atlas as the database.
+In production the Express server serves the compiled Angular app as static files, so the whole stack runs as a **single web service** with MongoDB Atlas as the database. A `render.yaml` blueprint is included for one click deployment on [Render](https://render.com).
 
-**Backend (Render web service):**
-- Root directory: `server`
-- Build command: `npm install`
-- Start command: `npm start`
-- Environment variables: `MONGO_URI`, `JWT_SECRET`, `CLIENT_ORIGIN` (the deployed frontend URL)
+**Deploy on Render (Blueprint):**
+1. Push this repository to GitHub.
+2. On Render choose **New → Blueprint** and select the repository. Render reads `render.yaml`.
+3. Set the `MONGO_URI` environment variable to your MongoDB Atlas connection string (`JWT_SECRET` is generated automatically).
+4. Deploy. The build runs `npm run build` for the client and installs the server, then `npm start` serves both the API and the app from one URL.
 
-**Frontend (Render static site / Netlify):**
-- Root directory: `client`
-- Build command: `npm install && npm run build`
-- Publish directory: `dist/client/browser`
-- Before building, set `apiUrl` in `src/environments/environment.prod.ts` to the deployed backend URL.
+**Manual configuration (any Node host):**
+- Build command: `cd client && npm install && npm run build && cd ../server && npm install`
+- Start command: `cd server && npm start`
+- Environment variables: `MONGO_URI`, `JWT_SECRET`, `NODE_ENV=production`
+
+> In MongoDB Atlas, allow network access from `0.0.0.0/0` so the cloud host can reach the database.
 
 ## License
 
