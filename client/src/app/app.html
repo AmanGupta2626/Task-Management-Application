@@ -1,20 +1,33 @@
 @if (auth.isLoggedIn()) {
-  <header class="navbar">
-    <div class="brand">TaskFlow</div>
-    <nav>
-      <a routerLink="/tasks" routerLinkActive="active">Tasks</a>
-      @if (auth.role() !== 'Employee') {
-        <a routerLink="/team" routerLinkActive="active">Team</a>
-      }
-    </nav>
-    <div class="user-box">
-      <span class="badge">{{ auth.currentUser()?.role }}</span>
-      <span class="username">{{ auth.currentUser()?.username }}</span>
-      <button class="btn-ghost" (click)="logout()">Logout</button>
+  <header class="sticky top-0 z-40 bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-500 text-white shadow-lg">
+    <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
+      <div class="flex items-center gap-2 text-lg font-bold tracking-tight">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-white/20 text-base">✓</span>
+        TaskFlow
+      </div>
+
+      <nav class="flex flex-1 items-center gap-1">
+        <a routerLink="/tasks" routerLinkActive="bg-white/15"
+           class="rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white">
+          Tasks
+        </a>
+        @if (auth.role() !== 'Employee') {
+          <a routerLink="/team" routerLinkActive="bg-white/15"
+             class="rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white">
+            Team
+          </a>
+        }
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <span class="pill bg-white/20 text-white">{{ auth.currentUser()?.role }}</span>
+        <span class="hidden text-sm font-medium sm:inline">{{ auth.currentUser()?.username }}</span>
+        <button class="btn-ghost" (click)="logout()">Logout</button>
+      </div>
     </div>
   </header>
 }
 
-<main class="content">
+<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
   <router-outlet />
 </main>

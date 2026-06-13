@@ -1,34 +1,42 @@
-<div class="auth-wrap">
-  <div class="card auth-card">
-    <h1>Welcome back</h1>
-    <p class="subtitle">Sign in to manage your tasks</p>
+<div class="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <div class="mb-6 text-center">
+      <div class="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-500 text-2xl text-white shadow-soft">✓</div>
+      <h1 class="text-2xl font-bold text-slate-900">Welcome back</h1>
+      <p class="mt-1 text-sm text-slate-500">Sign in to manage your tasks</p>
+    </div>
 
-    @if (error()) {
-      <div class="alert">{{ error() }}</div>
-    }
+    <div class="card p-7">
+      @if (error()) {
+        <div class="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-600 ring-1 ring-rose-100">{{ error() }}</div>
+      }
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" formControlName="email" placeholder="you@example.com" />
-        @if (form.controls.email.touched && form.controls.email.invalid) {
-          <span class="error">Enter a valid email address</span>
-        }
-      </div>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mb-4">
+          <label class="label" for="email">Email</label>
+          <input id="email" type="email" class="input" formControlName="email" placeholder="you@example.com" />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <span class="field-error">Enter a valid email address</span>
+          }
+        </div>
 
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" type="password" formControlName="password" placeholder="••••••••" />
-        @if (form.controls.password.touched && form.controls.password.invalid) {
-          <span class="error">Password must be at least 6 characters</span>
-        }
-      </div>
+        <div class="mb-5">
+          <label class="label" for="password">Password</label>
+          <input id="password" type="password" class="input" formControlName="password" placeholder="••••••••" />
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <span class="field-error">Password must be at least 6 characters</span>
+          }
+        </div>
 
-      <button class="btn full" type="submit" [disabled]="loading()">
-        {{ loading() ? 'Signing in...' : 'Sign in' }}
-      </button>
-    </form>
+        <button class="btn-primary w-full" type="submit" [disabled]="loading()">
+          {{ loading() ? 'Signing in...' : 'Sign in' }}
+        </button>
+      </form>
 
-    <p class="switch">Don't have an account? <a routerLink="/register">Register</a></p>
+      <p class="mt-5 text-center text-sm text-slate-500">
+        Don't have an account?
+        <a routerLink="/register" class="font-semibold text-brand-600 hover:text-brand-700">Register</a>
+      </p>
+    </div>
   </div>
 </div>

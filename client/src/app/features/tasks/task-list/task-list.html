@@ -1,52 +1,77 @@
-<div class="page-head">
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
   <div>
-    <h1>Tasks</h1>
-    <p class="muted">{{ pendingCount() }} pending · {{ completedCount() }} completed</p>
+    <h1 class="text-2xl font-bold text-slate-900">Tasks</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      <span class="font-semibold text-amber-600">{{ pendingCount() }}</span> pending ·
+      <span class="font-semibold text-emerald-600">{{ completedCount() }}</span> completed
+    </p>
   </div>
-  <button class="btn" (click)="openCreate()">+ New Task</button>
+  <button class="btn-primary" (click)="openCreate()">
+    <span class="text-base leading-none">+</span> New Task
+  </button>
 </div>
 
 @if (error()) {
-  <div class="alert">{{ error() }}</div>
+  <div class="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-600 ring-1 ring-rose-100">{{ error() }}</div>
 }
 
-<div class="filters">
-  <button [class.active]="filter() === 'all'" (click)="setFilter('all')">All</button>
-  <button [class.active]="filter() === 'pending'" (click)="setFilter('pending')">Pending</button>
-  <button [class.active]="filter() === 'completed'" (click)="setFilter('completed')">Completed</button>
+<div class="mb-6 flex flex-wrap gap-2">
+  @for (f of filters; track f.value) {
+    <button (click)="setFilter(f.value)"
+      class="rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition"
+      [class]="filter() === f.value
+        ? 'bg-brand-600 text-white ring-brand-600 shadow-soft'
+        : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'">
+      {{ f.label }}
+    </button>
+  }
 </div>
 
 @if (loading()) {
-  <p class="muted">Loading tasks...</p>
+  <p class="text-sm text-slate-400">Loading tasks...</p>
 } @else if (visibleTasks().length === 0) {
-  <div class="card empty">No tasks to show.</div>
+  <div class="card grid place-items-center p-16 text-center">
+    <div class="mb-3 grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-xl text-slate-400">☑</div>
+    <p class="text-slate-500">No tasks to show.</p>
+  </div>
 } @else {
-  <div class="task-grid">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
     @for (task of visibleTasks(); track task._id) {
-      <div class="card task" [class.done]="task.status === 'completed'">
-        <div class="task-top">
-          <span class="status-pill" [class.completed]="task.status === 'completed'">
+      <div class="card group flex flex-col p-5 transition hover:shadow-soft hover:ring-brand-100">
+        <div class="mb-3 flex items-center justify-between">
+          <span class="pill"
+            [class]="task.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+            <span class="mr-1 h-1.5 w-1.5 rounded-full"
+              [class]="task.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'"></span>
             {{ task.status }}
           </span>
-          <span class="date">{{ task.updatedAt | date: 'MMM d, y' }}</span>
+          <span class="text-xs text-slate-400">{{ task.updatedAt | date: 'MMM d' }}</span>
         </div>
 
-        <h3>{{ task.title }}</h3>
+        <h3 class="text-base font-semibold text-slate-900"
+          [class.line-through]="task.status === 'completed'"
+          [class.text-slate-400]="task.status === 'completed'">
+          {{ task.title }}
+        </h3>
         @if (task.description) {
-          <p class="desc">{{ task.description }}</p>
+          <p class="mt-1 text-sm text-slate-500">{{ task.description }}</p>
         }
 
-        <div class="meta">
-          <span><strong>Assigned:</strong> {{ task.assignedTo.username }}</span>
-          <span><strong>By:</strong> {{ task.createdBy.username }}</span>
+        <div class="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
+          <span class="grid h-6 w-6 place-items-center rounded-full bg-brand-100 text-[10px] font-bold text-brand-700">
+            {{ task.assignedTo.username.charAt(0).toUpperCase() }}
+          </span>
+          <span><span class="font-medium text-slate-700">{{ task.assignedTo.username }}</span></span>
+          <span class="text-slate-300">·</span>
+          <span>by {{ task.createdBy.username }}</span>
         </div>
 
-        <div class="actions">
-          <button class="btn btn-sm btn-secondary" (click)="toggleStatus(task)">
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button class="btn-secondary px-3 py-1.5 text-xs" (click)="toggleStatus(task)">
             {{ task.status === 'pending' ? 'Mark done' : 'Reopen' }}
           </button>
-          <button class="btn btn-sm btn-secondary" (click)="openEdit(task)">Edit</button>
-          <button class="btn btn-sm btn-danger" (click)="remove(task)">Delete</button>
+          <button class="btn-secondary px-3 py-1.5 text-xs" (click)="openEdit(task)">Edit</button>
+          <button class="btn-danger px-3 py-1.5 text-xs" (click)="remove(task)">Delete</button>
         </div>
       </div>
     }
@@ -54,36 +79,36 @@
 }
 
 @if (showForm()) {
-  <div class="overlay" (click)="closeForm()">
-    <div class="card modal" (click)="$event.stopPropagation()">
-      <h2>{{ editingId() ? 'Edit Task' : 'New Task' }}</h2>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm" (click)="closeForm()">
+    <div class="card w-full max-w-md p-6" (click)="$event.stopPropagation()">
+      <h2 class="mb-5 text-lg font-bold text-slate-900">{{ editingId() ? 'Edit Task' : 'New Task' }}</h2>
 
       <form [formGroup]="form" (ngSubmit)="save()">
-        <div class="field">
-          <label for="title">Title</label>
-          <input id="title" formControlName="title" placeholder="Task title" />
+        <div class="mb-4">
+          <label class="label" for="title">Title</label>
+          <input id="title" class="input" formControlName="title" placeholder="Task title" />
           @if (form.controls.title.touched && form.controls.title.invalid) {
-            <span class="error">Title must be at least 3 characters</span>
+            <span class="field-error">Title must be at least 3 characters</span>
           }
         </div>
 
-        <div class="field">
-          <label for="description">Description</label>
-          <textarea id="description" rows="3" formControlName="description"></textarea>
+        <div class="mb-4">
+          <label class="label" for="description">Description</label>
+          <textarea id="description" rows="3" class="input resize-none" formControlName="description"></textarea>
         </div>
 
-        <div class="field">
-          <label for="status">Status</label>
-          <select id="status" formControlName="status">
+        <div class="mb-4">
+          <label class="label" for="status">Status</label>
+          <select id="status" class="input" formControlName="status">
             <option value="pending">Pending</option>
             <option value="completed">Completed</option>
           </select>
         </div>
 
         @if (canAssign()) {
-          <div class="field">
-            <label for="assignedTo">Assign to</label>
-            <select id="assignedTo" formControlName="assignedTo">
+          <div class="mb-4">
+            <label class="label" for="assignedTo">Assign to</label>
+            <select id="assignedTo" class="input" formControlName="assignedTo">
               <option value="">Myself</option>
               @for (u of assignableUsers(); track u._id) {
                 <option [value]="u._id">{{ u.username }} ({{ u.role }})</option>
@@ -92,9 +117,9 @@
           </div>
         }
 
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn">{{ editingId() ? 'Save changes' : 'Create task' }}</button>
+        <div class="mt-6 flex justify-end gap-2">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary">{{ editingId() ? 'Save changes' : 'Create task' }}</button>
         </div>
       </form>
     </div>

@@ -33,6 +33,12 @@ export class TaskList implements OnInit {
   readonly editingId = signal<string | null>(null);
   readonly canAssign = computed(() => this.auth.role() !== 'Employee');
 
+  readonly filters: { label: string; value: Filter }[] = [
+    { label: 'All', value: 'all' },
+    { label: 'Pending', value: 'pending' },
+    { label: 'Completed', value: 'completed' },
+  ];
+
   readonly visibleTasks = computed(() => {
     const f = this.filter();
     const all = this.tasks();
