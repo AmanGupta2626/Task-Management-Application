@@ -1,54 +1,55 @@
-# TaskFlow — Task Management Application (MEAN Stack)
+# TaskFlow
 
-A full stack task management application built with the **MEAN stack** (MongoDB, Express, Angular, Node.js). It supports JWT authentication, role based authorization with a three level organisation hierarchy, full task CRUD, and real time updates over WebSockets.
+A task management app built on the MEAN stack (MongoDB, Express, Angular, Node). Users sign in, create and track tasks, and work inside a role based hierarchy — Manager, Team Lead and Employee — each with a different view of the board. Task changes show up live across connected clients over WebSockets.
 
-## Features
+The frontend is an Angular 21 dashboard (standalone components, signals, Tailwind) with a dark theme. The backend is an Express API with JWT auth stored in an httpOnly cookie.
 
-- **Authentication** — register and log in with JWT. All task and user routes are protected.
-- **Role based authorization** with three roles:
-  - **Manager** — sees every user (team leads and employees) and their tasks; can create, modify, reassign and delete tasks for anyone or themselves.
-  - **Team Lead** — sees and manages tasks for their own team members or themselves.
-  - **Employee** — creates and modifies only their own tasks; new tasks are automatically assigned to them.
-- **Task management** — create, read, update, delete, toggle completion, and filter by status (all / pending / completed).
-- **Form validation** on both registration and task forms.
-- **Real time updates** (bonus) — task changes are pushed live to every relevant user (assignee, creator, their team lead and manager) via Socket.IO.
-- **Responsive UI** built with Angular standalone components and signals.
+## What it does
 
-## Tech Stack
+- **Accounts & auth** — register with username, email and password and sign in. The JWT is kept in an httpOnly cookie, so the browser handles it and page scripts never touch the token.
+- **Three roles**
+  - **Employee** — creates and edits their own tasks; anything they create is assigned to them automatically. They only see their own work.
+  - **Team Lead** — sees their own tasks plus their team members' tasks, and can assign work to those members.
+  - **Manager** — sees every task in the organisation, can assign to anyone, and manages the org chart by putting employees under team leads.
+- **Tasks** — create, edit, delete, and mark complete (status flips between *pending* and *completed* from the card, not a dropdown). Filter by status, sort by date, and — for managers and team leads — filter the board down to a specific person.
+- **Team management** — on the Team page a manager sees two groups (team leads and employees) and can open a team lead's card to multi-select which employees report to them.
+- **Live updates** — creating, editing or deleting a task is pushed over Socket.IO to everyone who should see it, so boards stay in sync without a refresh.
 
-| Layer    | Technology                                  |
-| -------- | ------------------------------------------- |
-| Frontend | Angular 21 (standalone, signals), SCSS      |
-| Backend  | Node.js, Express, Socket.IO                 |
-| Database | MongoDB (Mongoose ODM), hosted on Atlas     |
-| Auth     | JWT, bcrypt                                 |
+## Tech
 
-## Project Structure
+- **Frontend:** Angular 21 (standalone, zoneless, signals), Tailwind CSS, Socket.IO client
+- **Backend:** Node + Express, Mongoose, Socket.IO, JWT, bcrypt
+- **Database:** MongoDB (works great with a free MongoDB Atlas cluster)
+- **Hardening:** httpOnly cookie auth, helmet, rate limiting, express-validator
+
+## Project layout
 
 ```
 Task-Management-Application/
-├── server/            Express + MongoDB API
+├── server/                 Express API + Socket.IO
+│   ├── server.js           http server + socket bootstrap
 │   └── src/
-│       ├── config/        database connection
-│       ├── models/        User and Task schemas
-│       ├── middleware/    auth, authorization, validation, errors
-│       ├── services/      role based access scope rules
-│       ├── controllers/   route handlers
-│       ├── routes/        API routes
-│       ├── socket.js      Socket.IO real time layer
-│       └── seed.js        demo data seeder
-└── client/            Angular application
+│       ├── config/         Mongoose connection
+│       ├── models/         User, Task schemas
+│       ├── middleware/     auth (cookie/JWT), role authorization, validation, rate limit, errors
+│       ├── services/       scope.js — who can see/assign/access what
+│       ├── controllers/    auth, user, task handlers
+│       ├── routes/         API routes
+│       ├── socket.js       real-time task events
+│       └── seed.js         demo users + tasks
+└── client/                 Angular app
     └── src/app/
-        ├── core/          services, guards, interceptor, models
-        └── features/      auth, tasks, users
+        ├── core/           services, guards, interceptor, models
+        └── features/
+            ├── auth/        login, register
+            ├── dashboard/   sidebar + header shell, role-based nav
+            ├── tasks/       task board
+            └── users/       team page
 ```
 
-## Prerequisites
+## Running it locally
 
-- Node.js 18+ and npm
-- A MongoDB database (a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster works well)
-
-## Getting Started
+You'll need **Node 20.19+** (Angular 21 requires it), **npm**, and a **MongoDB** connection string — a free [Atlas](https://www.mongodb.com/atlas) cluster is the easiest, or a local `mongod`.
 
 ### 1. Backend
 
@@ -58,100 +59,99 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and set your values:
+Open `.env` and fill in your values:
 
 ```
 PORT=5000
-MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/task_management
-JWT_SECRET=your_long_random_secret
+MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/task_management
+JWT_SECRET=use-a-long-random-string-here
 JWT_EXPIRES_IN=7d
 CLIENT_ORIGIN=http://localhost:4200
 DNS_SERVERS=8.8.8.8,1.1.1.1
 ```
 
-> `DNS_SERVERS` is optional. Set it only if your local network cannot resolve the
-> `mongodb+srv` SRV record (a common ISP/router issue); it points Node at public DNS.
+A couple of notes:
+- The app always uses the `task_management` database, so the path in the URI is optional.
+- `DNS_SERVERS` is only needed if your network can't resolve a `mongodb+srv` address (a common home-router/ISP quirk). It points Node at public DNS. Leave it out for a local `mongod`.
 
-Seed demo data and start the server:
+Load the demo data and start the API:
 
 ```bash
-npm run seed
-npm start
+npm run seed     # optional, but gives you accounts to log in with
+npm run dev      # or: npm start  -> http://localhost:5000
 ```
-
-The API runs at `http://localhost:5000`.
 
 ### 2. Frontend
 
 ```bash
 cd client
 npm install
-npm start
+npm start        # -> http://localhost:4200
 ```
 
-The app runs at `http://localhost:4200`.
+In development the Angular app talks to the API at `http://localhost:5000`, set in `client/src/environments/environment.ts`. If you run the backend on a different port, change `apiUrl` there to match.
 
-## Demo Accounts
+### Running it as a single app
 
-After running `npm run seed`, log in with any of these (password: `password123`):
+For a production-style run, build the Angular app and let Express serve it — everything ends up on one URL, no CORS:
 
-| Role      | Email             |
-| --------- | ----------------- |
-| Manager   | manager@demo.com  |
-| Team Lead | alice@demo.com    |
-| Team Lead | bob@demo.com      |
-| Employee  | charlie@demo.com  |
-| Employee  | dave@demo.com     |
-| Employee  | erin@demo.com     |
+```bash
+cd client && npm install && npm run build
+cd ../server && npm install && npm start
+# open http://localhost:5000
+```
 
-## API Overview
+## Demo accounts
 
-| Method | Endpoint                  | Description                          | Access        |
-| ------ | ------------------------- | ------------------------------------ | ------------- |
-| POST   | `/api/auth/register`      | Register a new user                  | Public        |
-| POST   | `/api/auth/login`         | Log in, returns JWT                  | Public        |
-| GET    | `/api/auth/managers`      | List managers (registration dropdown)| Public        |
-| GET    | `/api/auth/team-leads`    | List team leads (registration)       | Public        |
-| GET    | `/api/users`              | List users in scope                  | Manager, Lead |
-| GET    | `/api/users/assignable`   | Users this role can assign tasks to  | Authenticated |
-| GET    | `/api/tasks`              | List visible tasks (`?status=` filter)| Authenticated |
-| POST   | `/api/tasks`              | Create a task                        | Authenticated |
-| PUT    | `/api/tasks/:id`          | Update a task                        | Authenticated |
-| DELETE | `/api/tasks/:id`          | Delete a task                        | Authenticated |
+After `npm run seed`, all of these use the password **`password123`**:
 
-## Real Time Updates
+| Role      | Email                                   |
+| --------- | --------------------------------------- |
+| Manager   | manager@demo.com                        |
+| Team Lead | alice@demo.com, bob@demo.com            |
+| Employee  | charlie@demo.com, dave@demo.com, erin@demo.com |
 
-The backend emits `task:created`, `task:updated` and `task:deleted` events over Socket.IO. Each client authenticates the socket connection with its JWT and joins a personal room. When a task changes, the event is delivered to the assignee, the creator, the assignee's team lead and that team lead's manager, so the list stays in sync across connected clients automatically.
+Registration always creates an **Employee** (and enforces a stronger password — at least 8 characters with an uppercase, lowercase, number and symbol). Managers and Team Leads come from the seed, so use the accounts above to explore those roles. The seed wires up the hierarchy too (charlie/dave under alice, erin under bob).
 
-## Security
+> Heads up: `npm run seed` clears all existing users and tasks before inserting the demo set, so don't run it if you have data you want to keep.
 
-- Passwords are hashed with bcrypt and never returned in any API response.
-- JWTs are signed with a strong secret and verified on every protected route; there is no insecure fallback secret.
-- All task and user routes require authentication, and access is scoped by role so users cannot read or modify data outside their permitted set (verified against cross-team IDOR attempts).
-- Input is validated server-side with express-validator, which also blocks NoSQL operator injection on the auth endpoints.
-- `helmet` sets hardened HTTP security headers (HSTS, X-Content-Type-Options, X-Frame-Options, and more).
-- Authentication endpoints are rate limited to mitigate brute-force attempts.
-- The public registration lookup endpoints expose only usernames, not emails.
-- On the client, an HTTP interceptor logs the user out and redirects to login on a 401, and the session is re-validated against the server on startup.
-- Secrets live only in `.env`, which is gitignored and never committed.
+## API
+
+All `/api/users` and `/api/tasks` routes require a valid auth cookie.
+
+| Method | Endpoint              | What it does                                      |
+| ------ | --------------------- | ------------------------------------------------- |
+| POST   | `/api/auth/register`  | Sign up (creates an Employee), sets the cookie    |
+| POST   | `/api/auth/login`     | Sign in, sets the httpOnly cookie                 |
+| POST   | `/api/auth/logout`    | Clear the cookie                                  |
+| GET    | `/api/auth/me`        | Current user — used to validate the session       |
+| GET    | `/api/users`          | Users in your scope (Manager: all, Lead: their team) |
+| GET    | `/api/users/assignable` | People you're allowed to assign tasks to        |
+| PUT    | `/api/users/team`     | Assign employees to a team lead (Manager only)    |
+| GET    | `/api/tasks`          | Tasks you can see                                 |
+| POST   | `/api/tasks`          | Create a task                                     |
+| PUT    | `/api/tasks/:id`      | Update, toggle status, or reassign                |
+| DELETE | `/api/tasks/:id`      | Delete a task                                     |
+
+## Real-time
+
+The Socket.IO connection authenticates with the same httpOnly cookie used by the API. On every task change the server emits `task:created`, `task:updated` or `task:deleted` to the people involved (assignee, creator, and up the chain to their team lead and manager), and the client refreshes that board.
+
+## Security notes
+
+- The token lives in an httpOnly, SameSite cookie (Secure over HTTPS), so it isn't reachable from JavaScript — that closes off token theft via XSS.
+- Passwords are bcrypt-hashed and never sent back in a response.
+- Every protected route checks the role and scopes data so users can't read or change work outside their permission.
+- `helmet` adds the usual security headers, auth routes are rate limited against brute force, and express-validator rejects bad input (including NoSQL operator injection on login).
+- On the client, a 401 from the API logs the user out and redirects to login.
 
 ## Deployment
 
-In production the Express server serves the compiled Angular app as static files, so the whole stack runs as a **single web service** with MongoDB Atlas as the database. A `render.yaml` blueprint is included for one click deployment on [Render](https://render.com).
+In production Express serves the built Angular files, so the app runs as one web service with MongoDB Atlas behind it. A `render.yaml` blueprint is included for [Render](https://render.com):
 
-**Deploy on Render (Blueprint):**
-1. Push this repository to GitHub.
-2. On Render choose **New → Blueprint** and select the repository. Render reads `render.yaml`.
-3. Set the `MONGO_URI` environment variable to your MongoDB Atlas connection string (`JWT_SECRET` is generated automatically).
-4. Deploy. The build runs `npm run build` for the client and installs the server, then `npm start` serves both the API and the app from one URL.
+1. Push the repo to GitHub.
+2. On Render pick **New → Blueprint** and select the repo — it reads `render.yaml`.
+3. Set `MONGO_URI` to your Atlas connection string (`JWT_SECRET` is generated for you).
+4. Deploy. The build compiles the client and installs the server, then `npm start` serves the API and the app from a single URL.
 
-**Manual configuration (any Node host):**
-- Build command: `cd client && npm install && npm run build && cd ../server && npm install`
-- Start command: `cd server && npm start`
-- Environment variables: `MONGO_URI`, `JWT_SECRET`, `NODE_ENV=production`
-
-> In MongoDB Atlas, allow network access from `0.0.0.0/0` so the cloud host can reach the database.
-
-## License
-
-This project was built as a machine test submission.
+For any other host: build with `cd client && npm install && npm run build && cd ../server && npm install`, start with `cd server && npm start`, and set `MONGO_URI` and `JWT_SECRET`. Remember to allow the host's IP (or `0.0.0.0/0`) in Atlas Network Access.
