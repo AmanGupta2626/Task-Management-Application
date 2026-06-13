@@ -3,7 +3,6 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard, roleGuard } from './core/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'tasks' },
   {
     path: 'login',
     canActivate: [guestGuard],
@@ -15,14 +14,22 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register/register').then((m) => m.Register),
   },
   {
-    path: 'tasks',
+    path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/tasks/task-list/task-list').then((m) => m.TaskList),
+    loadComponent: () =>
+      import('./features/dashboard/dashboard-layout/dashboard-layout').then((m) => m.DashboardLayout),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'tasks' },
+      {
+        path: 'tasks',
+        loadComponent: () => import('./features/tasks/task-list/task-list').then((m) => m.TaskList),
+      },
+      {
+        path: 'team',
+        canActivate: [roleGuard(['Manager', 'TeamLead'])],
+        loadComponent: () => import('./features/users/team/team').then((m) => m.Team),
+      },
+    ],
   },
-  {
-    path: 'team',
-    canActivate: [authGuard, roleGuard(['Manager', 'TeamLead'])],
-    loadComponent: () => import('./features/users/team/team').then((m) => m.Team),
-  },
-  { path: '**', redirectTo: 'tasks' },
+  { path: '**', redirectTo: '' },
 ];
