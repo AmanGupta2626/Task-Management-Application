@@ -1,0 +1,38 @@
+<div class="page-head">
+  <h1>{{ auth.role() === 'Manager' ? 'Team Leads & Members' : 'My Team' }}</h1>
+</div>
+
+@if (loading()) {
+  <p class="muted">Loading team...</p>
+} @else if (members().length === 0) {
+  <div class="card empty">No team members found.</div>
+} @else {
+  <div class="member-list">
+    @for (member of members(); track member.user._id) {
+      <div class="card member">
+        <div class="member-head">
+          <div class="avatar">{{ member.user.username.charAt(0).toUpperCase() }}</div>
+          <div class="info">
+            <div class="name">{{ member.user.username }}</div>
+            <div class="sub">{{ member.user.email }}</div>
+          </div>
+          <span class="role-badge" [attr.data-role]="member.user.role">{{ member.user.role }}</span>
+        </div>
+
+        @if (member.tasks.length > 0) {
+          <ul class="task-mini">
+            @for (task of member.tasks; track task._id) {
+              <li>
+                <span class="dot" [class.completed]="task.status === 'completed'"></span>
+                <span class="t-title">{{ task.title }}</span>
+                <span class="t-status">{{ task.status }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="no-task">No tasks assigned</p>
+        }
+      </div>
+    }
+  </div>
+}
