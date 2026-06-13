@@ -40,6 +40,7 @@ export class Register {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set('Please complete all the requirements before creating your account.');
       return;
     }
     this.loading.set(true);
