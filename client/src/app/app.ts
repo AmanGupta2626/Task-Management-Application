@@ -16,6 +16,8 @@ export class App {
   private readonly router = inject(Router);
 
   constructor() {
+    this.auth.verifySession();
+
     effect(() => {
       const user = this.auth.currentUser();
       if (user && this.auth.token) {

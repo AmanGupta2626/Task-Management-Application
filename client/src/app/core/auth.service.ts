@@ -40,6 +40,17 @@ export class AuthService {
       .pipe(tap((res) => this.persist(res)));
   }
 
+  verifySession(): void {
+    if (!this.token) return;
+    this.http.get<{ user: User }>(`${this.api}/me`).subscribe({
+      next: (res) => {
+        localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+        this.userSignal.set(res.user);
+      },
+      error: () => this.logout(),
+    });
+  }
+
   managers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.api}/managers`);
   }
@@ -66,6 +77,13 @@ export class AuthService {
 
   private readUser(): User | null {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
   }
 }
